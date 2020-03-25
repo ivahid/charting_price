@@ -124,20 +124,20 @@ class Charting_price_Admin
         global $wpdb;
         $table_name = $wpdb->prefix . 'cp';
         if ($update) {
-            $last_price = $this->get_price($post_id,1);
-            if($last_price){
-                if($price > $last_price[0]->price){
+            $last_price = $this->get_price($post_id, 1);
+            if ($last_price) {
+                if ($price > $last_price[0]->price) {
                     $price_status = 2;
-                }elseif ($price < $last_price[0]->price){
+                } elseif ($price < $last_price[0]->price) {
                     $price_status = 1;
-                }else{
+                } else {
                     $price_status = 0;
                 }
-                update_post_meta($post_id,'price_status',$price_status);
-                $price_time = date("Y-m-d",$last_price[0]->time);
+                update_post_meta($post_id, 'price_status', $price_status);
+                $price_time = date("Y-m-d", $last_price[0]->time);
                 $now = date("Y-m-d");
-                if($now == $price_time){
-                    $result = $wpdb->update($table_name, array('price'=>$price, 'time'=>$time), array('id'=>$last_price[0]->id));
+                if ($now == $price_time) {
+                    $result = $wpdb->update($table_name, array('price' => $price, 'time' => $time), array('id' => $last_price[0]->id));
                     if ($result == 1) {
                         $price_id = $wpdb->insert_id;
                         return $price_id;
@@ -167,12 +167,18 @@ class Charting_price_Admin
 
     public function get_price($post_id, $limit = 1)
     {
+        if(!$post_id){
+            $post_id = $_POST['post_id'];
+        }
+        if(isset($_POST['limit'])){
+            $limit =$_POST['limit'];
+        }
         if ($limit && is_array($limit)) {
             $limit_str = 'LIMIT ' . implode(',', $limit);
         } else if ($limit && !is_array($limit)) {
             $limit_str = 'LIMIT ' . $limit;
-        }else{
-            $limit_str ='';
+        } else {
+            $limit_str = '';
         }
         global $wpdb;
         $table_name = $wpdb->prefix . 'cp';
@@ -180,9 +186,9 @@ class Charting_price_Admin
         $result = $wpdb->get_results($query);
         return $result;
     }
+
     public function get_all_prices()
     {
-
         global $wpdb;
         $table_name = $wpdb->prefix . 'cp';
         $query = $wpdb->prepare("SELECT * FROM $table_name GROUP BY post_id ORDER BY id DESC");
@@ -190,11 +196,5 @@ class Charting_price_Admin
         return $result;
     }
 
-    public function get_price_status($price_id = null)
-    {
 
-        $last_prices = $this->get_price($post_id,1);
-        $price_id = $_POST['price_id'];
-
-    }
 }

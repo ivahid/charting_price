@@ -157,6 +157,8 @@ class Charting_price {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
         $this->loader->add_action('admin_menu', $plugin_admin, 'add_plugin_admin_menu');
+        $this->loader->add_action('wp_ajax_get_price', $plugin_admin, 'get_price');
+        $this->loader->add_action('wp_ajax_nopriv_get_price', $plugin_admin, 'get_price');
         if (
         in_array('woocommerce/woocommerce.php',apply_filters( 'active_plugins', get_option( 'active_plugins' ) ))) {
             $this->loader->add_action('save_post', $plugin_admin, 'insert_price_database', 10,3 );
