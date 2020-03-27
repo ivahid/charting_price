@@ -133,7 +133,9 @@ class Charting_price_Admin
                 } else {
                     $price_status = 0;
                 }
+                $price_diff = abs($last_price[0]->price - $price);
                 update_post_meta($post_id, 'price_status', $price_status);
+                update_post_meta($post_id, 'price_diff', $price_diff);
                 $price_time = date("Y-m-d", $last_price[0]->time);
                 $now = date("Y-m-d");
                 if ($now == $price_time) {
@@ -167,11 +169,11 @@ class Charting_price_Admin
 
     public function get_price($post_id, $limit = 1)
     {
-        if(!$post_id){
+        if (!$post_id) {
             $post_id = $_POST['post_id'];
         }
-        if(isset($_POST['limit'])){
-            $limit =$_POST['limit'];
+        if (isset($_POST['limit'])) {
+            $limit = $_POST['limit'];
         }
         if ($limit && is_array($limit)) {
             $limit_str = 'LIMIT ' . implode(',', $limit);
@@ -182,17 +184,47 @@ class Charting_price_Admin
         }
         global $wpdb;
         $table_name = $wpdb->prefix . 'cp';
-        $query = $wpdb->prepare("SELECT * FROM $table_name WHERE post_id = %d ORDER BY id DESC $limit_str", $post_id);
+        $query = $wpdb->prepare("SELECT * FROM $table_name WHERE post_id = %d ORDER BY id ASC $limit_str", $post_id);
         $result = $wpdb->get_results($query);
         return $result;
     }
 
-    public function get_all_prices()
+    public function get_price_chart($post_id, $limit = 1)
     {
+        if (!$post_id) {
+            $post_id = $_POST['post_id'];
+        }
+        if (isset($_POST['limit'])) {
+            $limit = $_POST['limit'];
+        }
+        if ($limit && is_array($limit)) {
+            $limit_str = 'LIMIT ' . implode(',', $limit);
+        } else if ($limit && !is_array($limit)) {
+            $limit_str = 'LIMIT ' . $limit;
+        } else {
+            $limit_str = '';
+        }
         global $wpdb;
         $table_name = $wpdb->prefix . 'cp';
-        $query = $wpdb->prepare("SELECT * FROM $table_name GROUP BY post_id ORDER BY id DESC");
+        $query = $wpdb->prepare("SELECT * FROM $table_name WHERE post_id = %d ORDER BY id ASC $limit_str", $post_id);
         $result = $wpdb->get_results($query);
+        if ($result) {
+            foreach ($result as $key => $item) {
+                if ($key != 0) {
+                    $price_diff = $item->price - $result[$key - 1]->price;
+                    if ($price_diff > 0) {
+                        $status = 2;
+                    } elseif ($price_diff < 0) {
+                        $status = 1;
+                    } else {
+                        $status = 0;
+                    }
+                    $result[$key]->status =  $status;
+                }
+            }
+        }
+        var_dump($result);
+        die;
         return $result;
     }
 
